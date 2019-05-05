@@ -12,8 +12,23 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
   if (err) throw err;
   console.log("connection successful");
+  queryBamazon();
   makeTable();
 });
+
+function queryBamazon() {
+    console.log(`
+      ____  ___    __  ______ _____   ____  _   __
+     / __ )/   |  /  |/  /   /__  /  / __ \/ | / /
+    / __  / /| | / /|_/ / /| | / /  / / / /  |/ /
+   / /_/ / ___ |/ /  / / ___ |/ /__/ /_/ / /|  /
+  /_____/_/  |_/_/  /_/_/  |_/____/\____/_/ |_/
+  `);
+    console.log("Items up for sale");
+    console.log("------------------");
+};
+
+
 
 var makeTable = function() {
   connection.query("SELECT * FROM products", function(err, res) {
@@ -64,6 +79,8 @@ var promptCustomer = function(data) {
       .then(function(answer) {
         if (item.stockquantity - answer.quantity > 0) {
           console.log("ITEM SOLD! THANK YOU FOR SHOPPING BAMAZON!");
+          console.log(`Your order for ${answer.quantity} units of ${item.productname} has been placed`);
+          console.log(`Still working this out! Will be making the $$ calculate the total cost of the order`)
           UpdateInventory(item, answer.quantity)
         
         } else {
@@ -74,7 +91,7 @@ var promptCustomer = function(data) {
   }
 
   function UpdateInventory(item, quantity){
-      console.log(item.productname, quantity)
+    //   console.log(item.productname, quantity)
       var sqlQuery = `UPDATE products
                     SET stockquantity = stockquantity - ?
                     WHERE productname = ?`
