@@ -77,15 +77,19 @@ var promptCustomer = function(data) {
         }
       })
       .then(function(answer) {
-        if (item.stockquantity - answer.quantity > 0) {
-          console.log("ITEM SOLD! THANK YOU FOR SHOPPING BAMAZON!");
-          console.log(`Your order for ${answer.quantity} units of ${item.productname} has been placed`);
-          console.log(`Still working this out! Will be making the $$ calculate the total cost of the order`)
+        if (item.stockquantity - answer.quantity > -1) {
+          var numSold = answer.quantity;
+          var totalCost = numSold * parseFloat(item.price);
+          // console.log(totalCost);
+          console.log("ITEM SOLD!");
+          console.log(`Your order for ${answer.quantity} units of ${item.productname} has been placed\n`);
+          console.log(`Your total for today will be $${totalCost}\n`);
+          console.log("THANK YOU FOR SHOPPING BAMAZON!\n");
           UpdateInventory(item, answer.quantity)
         
         } else {
-          console.log("Not a valid selection!");
-    
+          console.log("Insufficient Quantity! Please start over \n");
+          makeTable();   
         }
       });
   }
