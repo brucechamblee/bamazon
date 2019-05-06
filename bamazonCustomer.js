@@ -81,7 +81,7 @@ var promptCustomer = function(data) {
           var numSold = answer.quantity;
           var totalCost = numSold * parseFloat(item.price);
           // console.log(totalCost);
-          console.log("ITEM SOLD!");
+          console.log("ITEM SOLD!\n");
           console.log(`Your order for ${answer.quantity} units of ${item.productname} has been placed\n`);
           console.log(`Your total for today will be $${totalCost}\n`);
           console.log("THANK YOU FOR SHOPPING BAMAZON!\n");
