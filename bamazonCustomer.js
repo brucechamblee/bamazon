@@ -32,6 +32,7 @@ function queryBamazon() {
 
 var makeTable = function() {
   connection.query("SELECT * FROM products", function(err, res) {
+    if(err) throw err;
     console.table(res);
     promptCustomer(res);
   });

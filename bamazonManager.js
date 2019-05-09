@@ -66,98 +66,98 @@ var managerOptions = function(){
 
 var viewProducts = function() {
   connection.query("SELECT * FROM products", function(err, res) {
+    if (err) throw err;
+    console.log('\n');
     console.table(res);
     managerOptions();
   });
 };
 
-function viewLowInv () {
-    inquirer
-        .prompt({
-            name: "invlvl",
-            type: "input",
-            message: "What Inventory Level would you like me to check for low inventory items on? [Quit with Q]",
-            validate: function(val){
-                return !isNaN(val) || val.toLowerCase() === "q"
-            }
-        })
-        .then (function(answer) {
-            var itemlvl = checkInventory(data, parseInt(answer.invlvl))
-            var query = "SELECT itemid, stockquantity FROM products WHERE ?";
-            connection.query(query, { stockquantity: answer.stockquantity}, function(err, res) {
-            if (err) throw err;
-            for (var i = 0; i < res.length; i++) {
-            console.log(`Item ID: ${res[i].itemid} || Product Name: ${res[i].productname} || Department: ${res[i].departmentname} || On Hand Inv: ${res[i].stockquantity}`)
-            }
-            // console.log(lowinventory);
-        });
+function lowInv (answer) {
+    console.log('Checking items with low inventory levels \n');
+    var sql = 'SELECT * FROM products WHERE stockquantity <= ?';
+    connection.query(sql, [parseInt(answer)], function(err, res) {
+      if (err) throw err;
+      console.table(res);
+      managerOptions();
     });
-};
-    
-// var promptCustomer = function(data) {
-//   inquirer
-//     .prompt([
-//       {
-//         type: "input",
-//         name: "choice",
-//         message: "What item ID would like to purchase? [Quit with Q]",
-//         validate: function(val){
-//             return !isNaN(val) || val.toLowerCase() === "q"
-//         }
-//       }
-//     ])
-//     .then(function(answer) {
-//       var item = GetItem(data, parseInt(answer.choice));
+  };
 
+function viewLowInv() { 
+  inquirer
+  .prompt({
+    name: "invlvl",
+    number: "input",
+    message: "What level for low inventory would you like to set? [Quit with Q]",
+    validate: function(val){
+      return !isNaN(val) || val.toLowerCase() === "q"
+    }
+  })
+  .then (function (answer) {
+    invNumber = parseInt(answer.invlvl);
+    lowInv(parseInt(invNumber));
+  })
+}
+   
+var addInventory = function(data){
+  inquirer
+  .prompt([
+    {
+      type: "input",
+      name: "invupdate",
+      message: "What item ID would you like to edit? [Quit with Q]",
+      validate: function(val) {
+        return !isNaN(val) || val.toLowerCase() === "q"
+      }
+    }
+  ])
+  .then(function(answer) {
+    var item = GetItem(data, parseInt(answer.invupdate));
+    console.log(item);
+    !isNaN(answer.invupdate) ? updateInventory(item) : connection.end()
+  });
 
-//       !isNaN(answer.choice) ? PromptQuantity(item) : connection.end() //This is a ternary function....
-
-//     });
-
-  function checkInventory(data, stockquantity) {
+  function GetItem(data, itemid) {
+    console.log(data)
     for (var i = 0; i < data.length; i++) {
-      if (data[i].stockquantity += stockquantity) {
+      if (data[i].itemid === itemid) {
         return data[i];
       }
     }
     return null;
   }
 
-//   function PromptQuantity(item) {
-//     inquirer
-//       .prompt({
-//         type: "input",
-//         name: "quantity",
-//         message: "How many of these items would you like to buy?",
-//         validate: function(value) {
-//           return !isNaN(value);
-//         }
-//       })
-//       .then(function(answer) {
-//         if (item.stockquantity - answer.quantity > -1) {
-//           var numSold = answer.quantity;
-//           var totalCost = numSold * parseFloat(item.price);
-//           // console.log(totalCost);
-//           console.log("ITEM SOLD!\n");
-//           console.log(`Your order for ${answer.quantity} units of ${item.productname} has been placed\n`);
-//           console.log(`Your total for today will be $${totalCost}\n`);
-//           console.log("THANK YOU FOR SHOPPING BAMAZON!\n");
-//           UpdateInventory(item, answer.quantity)
-        
-//         } else {
-//           console.log("Insufficient Quantity! Please start over \n");
-//           makeTable();   
-//         }
-//       });
-//   }
+  function updateInventory (item) {
+    inquirer
+    .prompt({
+      type: "input",
+      name: "quantity",
+      message: "What quantity would you like to add?",
+      validate: function(value){
+        return !isNaN(value);
+      }
+    })
+    .then(function(answer) {
+      var updatedQty = item.stockquantity + answer.quantity;
+      console.log(`Quantity Added to ${item.productname} and has been updated\n`);
+      updateItem(item, updatedQty)
 
-//   function UpdateInventory(item, quantity){
-//     //   console.log(item.productname, quantity)
-//       var sqlQuery = `UPDATE products
-//                     SET stockquantity = stockquantity - ?
-//                     WHERE productname = ?`
-//       connection.query(sqlQuery, [ parseInt(quantity), item.productname ], function(err, res){
-//           makeTable()
-//       })
-//   }
-// };
+    })
+
+  }
+
+  function updateItem (item, updatedQty) {
+    var sqlQuery = `UPDATE products
+                    SET stockquantity = stockquantity + ?
+                    WHERE productname = ?`
+    connection.query(sqlQuery, [ parseInt(updatedQty), item.productname ], function (err, res) {
+      viewProducts()
+    })
+
+  }
+
+
+}
+
+
+
