@@ -52,7 +52,7 @@ var managerOptions = function(){
           viewLowInv()
           break
         case 'Add Inventory':
-          addInventory()
+          addInv()
           break
         case 'Add New Product':
           addProduct()
@@ -99,65 +99,73 @@ function viewLowInv() {
   })
 }
    
-var addInventory = function(data){
-  inquirer
-  .prompt([
-    {
-      type: "input",
-      name: "invupdate",
-      message: "What item ID would you like to edit? [Quit with Q]",
-      validate: function(val) {
-        return !isNaN(val) || val.toLowerCase() === "q"
-      }
-    }
-  ])
-  .then(function(answer) {
-    var item = GetItem(data, parseInt(answer.invupdate));
-    console.log(item);
-    !isNaN(answer.invupdate) ? updateInventory(item) : connection.end()
-  });
 
-  function GetItem(data, itemid) {
-    console.log(data)
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].itemid === itemid) {
-        return data[i];
-      }
-    }
-    return null;
-  }
-
-  function updateInventory (item) {
+var addInv = function() {
+  connection.query("SELECT * FROM products", function(err, res) {
+    if(err) throw err;
+    addInventory(res);
+  })
+  
+  function addInventory (data){
     inquirer
-    .prompt({
-      type: "input",
-      name: "quantity",
-      message: "What quantity would you like to add?",
-      validate: function(value){
-        return !isNaN(value);
+    .prompt([
+      {
+        type: "input",
+        name: "invupdate",
+        message: "What item ID would you like to edit? [Quit with Q]",
+        validate: function(val) {
+          return !isNaN(val) || val.toLowerCase() === "q"
+        }
       }
-    })
+    ])
     .then(function(answer) {
-      var updatedQty = item.stockquantity + answer.quantity;
-      console.log(`Quantity Added to ${item.productname} and has been updated\n`);
-      updateItem(item, updatedQty)
-
-    })
-
+      var item = GetItem(data, parseInt(answer.invupdate));
+      !isNaN(answer.invupdate) ? updateInventory(item) : connection.end()
+    });
+    
+    function GetItem(data, itemid) {
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].itemid === itemid) {
+          return data[i];
+        }
+      }
+      return null;
+    }
+    
+    function updateInventory (item) {
+      inquirer
+      .prompt({
+        type: "input",
+        name: "quantity",
+        message: "What quantity would you like to add?",
+        validate: function(value){
+          return !isNaN(value);
+        }
+      })
+      .then(function(answer) {
+        console.log(item.stockquantity, answer.quantity);
+        var updatedQty = item.stockquantity + answer.quantity;
+        console.log(`Quantity Added to ${item.productname} and has been updated\n`);
+        updateItem(item, updatedQty)
+        
+      })
+      
+    }
+    
+    function updateItem (item, updatedQty) {
+      var sqlQuery = `UPDATE products
+      SET stockquantity = stockquantity + ?
+      WHERE productname = ?`
+      connection.query(sqlQuery, [ parseInt(updatedQty), item.productname ], function (err, res) {
+        viewProducts()
+      })
+      
+    }
+    
+    
   }
-
-  function updateItem (item, updatedQty) {
-    var sqlQuery = `UPDATE products
-                    SET stockquantity = stockquantity + ?
-                    WHERE productname = ?`
-    connection.query(sqlQuery, [ parseInt(updatedQty), item.productname ], function (err, res) {
-      viewProducts()
-    })
-
-  }
-
-
 }
-
-
-
+  
+  
+  
+  
