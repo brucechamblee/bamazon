@@ -144,9 +144,8 @@ var addInv = function() {
       })
       .then(function(answer) {
         console.log(item.stockquantity, answer.quantity);
-        var updatedQty = item.stockquantity + answer.quantity;
         console.log(`Quantity Added to ${item.productname} and has been updated\n`);
-        updateItem(item, updatedQty)
+        updateItem(item, answer.quantity)
         
       })
       
