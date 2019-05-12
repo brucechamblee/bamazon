@@ -148,7 +148,6 @@ var addInv = function() {
         updateItem(item, answer.quantity)
         
       })
-      
     }
     
     function updateItem (item, updatedQty) {
@@ -158,13 +157,68 @@ var addInv = function() {
       connection.query(sqlQuery, [ parseInt(updatedQty), item.productname ], function (err, res) {
         viewProducts()
       })
-      
     }
-    
-    
   }
 }
   
   
+var addProduct = function() {
+  connection.query("SELECT * FROM products", function (err, res) {
+    if (err) throw err;
+    newProduct(res);
+  })
+}
+
+function getDepartments(data){
+  var departments = [];
+  for(var i = 0; i < data.length; i++){
+    departments.push(data[i].departmentname)
+  }
+  return departments
+}
+
+function newProduct (database) {
+  inquirer
+  .prompt ([
+    {
+      type: "input",
+      name: "prodName",
+      message: "What is the name of the product you want to add?",
+    },
+    {
+      type: "list",
+      name: "deptName",
+      choices: getDepartments(database),
+      message: "What department does the new product need to go in?",
+    },
+    {
+      type: "input",
+      name: "itemPrice",
+      message: "What is the price per unit of the new product we are adding?",
+    },
+    {
+      type: "input",
+      name: "stkQTY",
+      message: "What is the quantity of the new item we are adding?",
+    }
+  ])
+  .then (function (answer) {
+    connection.query("INSERT INTO products set ?",
+      {
+        productname: answer.prodName,
+        departmentname: answer.deptName,
+        price: parseFloat(answer.itemPrice),
+        stockquantity: answer.stkQTY
+      },
+      function(err, res) {
+        if (err) throw err;
+        console.log(res.affectedRows + " product inserted! \n")
+        viewProducts();
+      }
+      )
+  })
+}
   
-  
+var disconnect = function() {
+  connection.end();
+}

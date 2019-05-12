@@ -86,7 +86,7 @@ var promptCustomer = function(data) {
           console.log(`Your order for ${answer.quantity} units of ${item.productname} has been placed\n`);
           console.log(`Your total for today will be $${totalCost}\n`);
           console.log("THANK YOU FOR SHOPPING BAMAZON!\n");
-          UpdateInventory(item, answer.quantity)
+          UpdateInventory(item, answer.quantity, totalCost)
         
         } else {
           console.log("Insufficient Quantity! Please start over \n");
@@ -95,12 +95,13 @@ var promptCustomer = function(data) {
       });
   }
 
-  function UpdateInventory(item, quantity){
+  function UpdateInventory(item, quantity, cost){
     //   console.log(item.productname, quantity)
       var sqlQuery = `UPDATE products
-                    SET stockquantity = stockquantity - ?
+                    SET stockquantity = stockquantity - ? ,
+                      product_sales = product_sales + ?
                     WHERE productname = ?`
-      connection.query(sqlQuery, [ parseInt(quantity), item.productname ], function(err, res){
+      connection.query(sqlQuery, [ parseInt(quantity), cost, item.productname ], function(err, res){
           makeTable()
       })
   }
